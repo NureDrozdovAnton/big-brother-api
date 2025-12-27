@@ -1,5 +1,3 @@
-version: "3.7"
-
 services:
     postgres:
         volumes:
@@ -9,9 +7,8 @@ services:
         image: jrottenberg/ffmpeg:latest
         command: >
             -re -f lavfi -i testsrc=size=1280x720:rate=30 
-            -c:v libx264 -preset ultrafast -tune zerolatency 
-            -pix_fmt yuv420p
-            -f rtsp -rtsp_transport tcp rtsp://mediamtx:8554/demo_stream
+            -c:v libx264 -pix_fmt yuv420p -f rtsp 
+            -rtsp_transport tcp rtsp://mediamtx:8554/demo_stream
         depends_on:
             - mediamtx
 

@@ -4,20 +4,68 @@ import { Camera } from "~/entities";
 import { isAdmin } from "~/guards";
 import { validate } from "~/middlewares";
 import { createCameraSchema, createOperatorSchema } from "./schema";
-import { UserAuth } from "~/services";
+import { Logger, MediaMtx, Recorder, UserAuth } from "~/services";
 import { UserRole } from "~/entities/user";
-
-const MEDIA_MTX_URL = process.env.MEDIA_MTX_URL || "http://localhost:9997/v3";
+import { EventType } from "~/entities/log";
 
 const cameraRepo = db.getRepository(Camera);
 const router = Router();
 
 router.use(isAdmin);
 
+router.get("/logs", async (req, res) => {
+    const { by, types, startDate, endDate } = req.query;
+
+    try {
+        const logs = await Logger.getLogs({
+            by: typeof by === "string" ? by : undefined,
+            types: Array.isArray(types)
+                ? (types as string[]).map((type) => type as EventType)
+                : typeof types === "string"
+                  ? [types as EventType]
+                  : undefined,
+            startDate: startDate ? new Date(startDate as string) : undefined,
+            endDate: endDate ? new Date(endDate as string) : undefined,
+        });
+
+        res.status(200).json({ ok: true, data: logs });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ ok: false, error: "Internal server error" });
+    }
+});
+
 router.get("/cameras", async (req, res) => {
     try {
         const cameras = await cameraRepo.find();
         res.status(200).json({ ok: true, data: cameras });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ ok: false, error: "Internal server error" });
+    }
+});
+
+router.get("/cameras/:id/status", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const camera = await cameraRepo.findOneBy({ id });
+
+        if (!camera) {
+            return res
+                .status(404)
+                .json({ ok: false, error: "Camera not found" });
+        }
+
+        if (!camera.rtspUrl) {
+            return res.status(400).json({
+                ok: false,
+                error: "Camera has no RTSP URL configured",
+            });
+        }
+
+        const online = await MediaMtx.isStreamLive(camera.cameraId);
+
+        res.status(200).json({ ok: true, data: { online: online } });
     } catch (error) {
         console.error(error);
         res.status(500).json({ ok: false, error: "Internal server error" });
@@ -41,25 +89,15 @@ router.post("/cameras", validate(createCameraSchema), async (req, res) => {
         await cameraRepo.save(camera);
 
         if (rtspUrl) {
-            const response = await fetch(
-                `${MEDIA_MTX_URL}/config/paths/add/${cameraId}`,
-                {
-                    method: "POST",
-                    body: JSON.stringify({
-                        source: rtspUrl,
-                        sourceOnDemand: true,
-                    }),
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${btoa("admin:admin")}`,
-                    },
-                }
-            );
-
-            if (!response.ok) {
-                // throw new Error("Failed to add camera to MediaMTX");
-            }
+            await MediaMtx.addCamera(cameraId, rtspUrl);
+            Recorder.startRecording(cameraId, rtspUrl);
         }
+
+        Logger.logAction(res.locals.user!, EventType.CameraAdded, {
+            cameraId: camera.id,
+            ipAddress: camera.ipAddress,
+            name: camera.name,
+        });
 
         res.status(201).json({ ok: true, data: camera });
     } catch (error) {
@@ -90,6 +128,65 @@ router.put("/cameras/:id", validate(createCameraSchema), async (req, res) => {
         await cameraRepo.save(camera);
 
         res.status(200).json({ ok: true, data: camera });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ ok: false, error: "Internal server error" });
+    }
+});
+
+router.post("/cameras/:id/recordings/start", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const camera = await cameraRepo.findOneBy({ id });
+
+        if (!camera) {
+            return res
+                .status(404)
+                .json({ ok: false, error: "Camera not found" });
+        }
+
+        if (!camera.rtspUrl) {
+            return res.status(400).json({
+                ok: false,
+                error: "Camera has no RTSP URL configured",
+            });
+        }
+
+        if (Recorder.isRecording(camera.cameraId)) {
+            return res
+                .status(400)
+                .json({ ok: false, error: "Recording already in progress" });
+        }
+
+        Recorder.startRecording(camera.cameraId, camera.rtspUrl);
+
+        res.status(200).json({ ok: true, data: "Recording started" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ ok: false, error: "Internal server error" });
+    }
+});
+
+router.post("/cameras/:id/recordings/stop", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const camera = await cameraRepo.findOneBy({ id });
+
+        if (!camera) {
+            return res
+                .status(404)
+                .json({ ok: false, error: "Camera not found" });
+        }
+
+        if (!Recorder.isRecording(camera.cameraId)) {
+            return res
+                .status(400)
+                .json({ ok: false, error: "No recording in progress" });
+        }
+
+        Recorder.stopRecording(camera.cameraId);
+
+        res.status(200).json({ ok: true, data: "Recording stopped" });
     } catch (error) {
         console.error(error);
         res.status(500).json({ ok: false, error: "Internal server error" });

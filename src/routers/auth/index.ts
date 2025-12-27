@@ -2,8 +2,9 @@ import type { BaseResponse } from "~/interfaces";
 import type { SignInRequest } from "./interfaces";
 import { Router } from "express";
 import { validate } from "~/middlewares";
-import { UserAuth } from "~/services";
+import { Logger, UserAuth } from "~/services";
 import { signInSchema } from "./schema";
+import { EventType } from "~/entities/log";
 
 const router = Router();
 
@@ -18,6 +19,8 @@ router.post(
             });
 
             req.session.userId = user.id;
+
+            Logger.logAction(user, EventType.Login);
 
             res.json({
                 ok: true,
@@ -35,7 +38,11 @@ router.post(
     }
 );
 
-router.post("/sign-out", async (req, res) => {
+router.post("/sign-out", async (req, res: BaseResponse) => {
+    if (res.locals.user) {
+        Logger.logAction(res.locals.user, EventType.Logout);
+    }
+
     req.session.destroy((error) => {
         if (error) {
             console.log(error);

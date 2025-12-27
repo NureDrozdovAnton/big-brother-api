@@ -4,6 +4,7 @@ import db from "./data-source";
 import * as redis from "./redis-client";
 import app from "./app";
 import { setupSuperAdmin } from "./setup";
+import { Recorder } from "./services";
 
 const connect = async (name: string, fn: () => Promise<unknown>) => {
     try {
@@ -32,5 +33,11 @@ const start = async () => {
         process.exit(1);
     }
 };
+
+process.on("SIGINT", async () => {
+    console.log("Stopping all recordings...");
+    Recorder.stopAllRecordings();
+    process.exit(0);
+});
 
 start();

@@ -1,5 +1,3 @@
-version: "3.7"
-
 services:
     redis:
         image: redis:latest
@@ -37,12 +35,5 @@ services:
             - "8889:8889" # WebRTC
             - "1935:1935" # RTMP
             - "9997:9997" # API
-        environment:
-            - MTX_API=yes
-            - MTX_APIADDRESS=:9997
-            - MTX_AUTHMETHOD=internal
-            - MTX_AUTHINTERNALUSERS_0_USER=admin
-            - MTX_AUTHINTERNALUSERS_0_PASS=admin
-            - MTX_AUTHINTERNALUSERS_0_PERMISSIONS_0_ACTION=read
-            - MTX_AUTHINTERNALUSERS_0_PERMISSIONS_1_ACTION=publish
-            - MTX_AUTHINTERNALUSERS_0_PERMISSIONS_3_ACTION=api
+        volumes:
+            - ./mediamtx.yml:/mediamtx.yml
