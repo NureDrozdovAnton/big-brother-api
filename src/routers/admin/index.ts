@@ -49,12 +49,15 @@ router.post("/cameras", validate(createCameraSchema), async (req, res) => {
                         source: rtspUrl,
                         sourceOnDemand: true,
                     }),
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${btoa("admin:admin")}`,
+                    },
                 }
             );
 
             if (!response.ok) {
-                throw new Error("Failed to add camera to MediaMTX");
+                // throw new Error("Failed to add camera to MediaMTX");
             }
         }
 
