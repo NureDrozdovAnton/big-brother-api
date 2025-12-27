@@ -4,7 +4,7 @@ import express from "express";
 import session from "express-session";
 import morgan from "morgan";
 import { AuthMiddleware } from "./middlewares";
-import { MeRouter, AuthRouter } from "./routers";
+import { MeRouter, AuthRouter, OperatorRouter, AdminRouter } from "./routers";
 import * as redis from "./redis-client";
 
 const app = express();
@@ -38,5 +38,7 @@ app.use(AuthMiddleware);
 //
 app.use("/me", MeRouter);
 app.use("/auth", AuthRouter);
+app.use("/operator", OperatorRouter);
+app.use("/admin", AdminRouter);
 
 export default app;

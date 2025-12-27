@@ -16,10 +16,19 @@ export default class Camera {
     declare ptzEnabled: boolean;
 
     @Column("text", { nullable: false })
+    declare cameraId: string;
+
+    @Column("text", { nullable: false })
     declare name: string;
 
     @Column("text", { nullable: false })
     declare ipAddress: string;
+
+    @Column("text", { nullable: true })
+    declare rtspUrl: string | null;
+
+    @Column("text", { nullable: true })
+    declare ptzUrl: string | null;
 
     @Column("enum", {
         enum: CameraStatus,
