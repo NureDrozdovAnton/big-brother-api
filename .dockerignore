@@ -1,0 +1,27 @@
+# node
+node_modules
+build
+dist
+coverage
+
+# tests & local stuff
+tests
+*.log
+
+# git
+.git
+.gitignore
+
+# editors
+.vscode
+.idea
+
+# env (опційно)
+.env
+.env.*
+
+# docker
+docker-compose.yml
+docker-compose.override.yml
+Dockerfile
+Dockerfile.localstack

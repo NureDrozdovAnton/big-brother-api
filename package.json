@@ -1,0 +1,63 @@
+{
+    "private": true,
+    "name": "big-brother-api",
+    "version": "0.0.1",
+    "description": "Big Brother API",
+    "main": "index.js",
+    "scripts": {
+        "build": "tsc",
+        "start": "node build/index.js",
+        "build:watch": "npm run clean && tsc -w",
+        "start:watch": "nodemon --enable-source-maps --watch build build/index.js",
+        "migration:generate": "cd ./src/migrations && typeorm-ts-node-commonjs migration:generate -d ../migration-entry.ts",
+        "migration:show": "typeorm-ts-node-commonjs migration:show -d ./src/migration-entry.ts",
+        "migration:upgrade": "typeorm-ts-node-commonjs migration:run -d ./src/migration-entry.ts",
+        "migration:downgrade": "typeorm-ts-node-commonjs migration:revert -d ./src/migration-entry.ts",
+        "test": "jest",
+        "lint": "eslint --ext .ts src/",
+        "lint:fix": "eslint --ext .ts src/ --fix",
+        "clean": "rimraf build"
+    },
+    "dependencies": {
+        "@aws-sdk/client-s3": "^3.927.0",
+        "chalk": "^4.1.2",
+        "connect-redis": "^7.1.1",
+        "cors": "^2.8.5",
+        "dotenv": "^16.4.5",
+        "express": "^4.19.1",
+        "express-session": "^1.18.0",
+        "joi": "^17.12.2",
+        "morgan": "^1.10.0",
+        "multer": "^2.0.2",
+        "pg": "^8.11.3",
+        "redis": "^4.6.13",
+        "typeorm": "^0.3.20"
+    },
+    "devDependencies": {
+        "@types/cors": "^2.8.17",
+        "@types/express": "^4.17.21",
+        "@types/express-session": "^1.18.0",
+        "@types/jest": "^29.5.12",
+        "@types/morgan": "^1.9.9",
+        "@types/multer": "^2.0.0",
+        "@types/node": "^24.7.2",
+        "@types/supertest": "^6.0.2",
+        "@types/uuid": "^10.0.0",
+        "@typescript-eslint/eslint-plugin": "^7.3.1",
+        "@typescript-eslint/parser": "^7.3.1",
+        "eslint": "^8.57.0",
+        "eslint-config-prettier": "^9.1.0",
+        "jest": "^29.7.0",
+        "module-alias": "^2.2.3",
+        "nodemon": "^3.1.0",
+        "prettier": "^3.2.5",
+        "rimraf": "^6.0.1",
+        "supertest": "^6.3.4",
+        "ts-jest": "^29.1.2",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.4.3"
+    },
+    "_moduleAliases": {
+        "~": "./build"
+    }
+}

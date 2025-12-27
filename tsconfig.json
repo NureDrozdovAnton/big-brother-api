@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "module": "commonjs",
+        "esModuleInterop": true,
+        "noImplicitAny": true,
+        "noImplicitThis": true,
+        "strict": true,
+        "strictNullChecks": true,
+        "experimentalDecorators": true,
+        "outDir": "build",
+        "baseUrl": "./src",
+        "paths": {
+            "~/*": ["./*"]
+        },
+        "types": ["node", "jest"],
+        "lib": ["ES6", "DOM", "ESNext.String"]
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "build"]
+}
