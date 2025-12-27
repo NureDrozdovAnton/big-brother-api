@@ -28,7 +28,20 @@ router.get("/logs", async (req, res) => {
             endDate: endDate ? new Date(endDate as string) : undefined,
         });
 
-        res.status(200).json({ ok: true, data: logs });
+        res.status(200).json({
+            ok: true,
+            data: logs.map((log) => ({
+                id: log.id,
+                eventType: log.eventType,
+                meta: log.meta,
+                createdAt: log.createdAt,
+                user: {
+                    id: log.user.id,
+                    login: log.user.login,
+                    name: log.user.name,
+                },
+            })),
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ ok: false, error: "Internal server error" });
