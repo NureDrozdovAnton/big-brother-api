@@ -21,7 +21,7 @@ export const addCamera = async (cameraId: string, rtspUrl: string) => {
     }
 };
 
-export const isStreamLive = async (cameraId: string) => {
+export const isStreamLive = async (cameraId: string): Promise<boolean> => {
     try {
         const response = await fetch(`${MEDIA_MTX_URL}/paths/list`, {
             headers: {

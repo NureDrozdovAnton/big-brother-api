@@ -18,6 +18,7 @@ declare global {
             SUPER_ADMIN_PASSWORD?: string;
             MEDIA_MTX_URL: string;
             WEBRTC_BASE_URL: string;
+            EMULATOR_BASE_URL: string;
         }
     }
 }

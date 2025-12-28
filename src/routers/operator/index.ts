@@ -4,6 +4,7 @@ import { Camera } from "~/entities";
 import { isOperator } from "~/guards";
 import { validate } from "~/middlewares";
 import { ptzPostSchema } from "./schema";
+import { CameraPtz, MediaMtx } from "~/services";
 
 const WEBRTC_URL = process.env.WEBRTC_BASE_URL || "http://localhost:8889";
 
@@ -49,9 +50,23 @@ router.post("/cameras/:id/ptz", validate(ptzPostSchema), async (req, res) => {
         const { id } = req.params;
         const { command } = req.body;
 
-        // Send PTZ command to camera
-        // ...
-        void id, command;
+        const camera = await cameraRepo.findOneBy({ id });
+
+        if (!camera) {
+            return res
+                .status(404)
+                .json({ ok: false, error: "Camera not found" });
+        }
+
+        const live = await MediaMtx.isStreamLive(camera.cameraId);
+
+        if (!live) {
+            return res
+                .status(409)
+                .json({ ok: false, error: "Camera is not live" });
+        }
+
+        await CameraPtz.sendPTZCommand(camera.cameraId, command);
 
         res.status(200).json({ ok: true });
     } catch (error) {

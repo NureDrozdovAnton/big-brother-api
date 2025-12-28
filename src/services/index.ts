@@ -1,3 +1,4 @@
+export * as CameraPtz from "./camera-ptz";
 export * as Logger from "./logger";
 export * as MediaMtx from "./media-mtx";
 export * as Recorder from "./recorder";
